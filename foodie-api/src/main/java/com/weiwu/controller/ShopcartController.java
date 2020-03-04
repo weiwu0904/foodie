@@ -44,5 +44,22 @@ public class ShopcartController {
         return IMOOCJSONResult.ok();
     }
 
+    @PostMapping("/del")
+    @ApiOperation(value = "删除购物车的某一个商品", notes = "删除购物车的某一个商品",httpMethod = "POST")
+    public IMOOCJSONResult del(@RequestParam String userId,
+                               @RequestParam String itemSpecId) {
+
+        if (StringUtils.isBlank(userId)) {
+            return IMOOCJSONResult.errorMsg("参数不能为空");
+        }
+
+        if (StringUtils.isBlank(itemSpecId)) {
+            return IMOOCJSONResult.errorMsg("参数不能为空");
+        }
+
+        //TODO 用户在页面删除购物车商品的数据，如果用户登陆了，则需要同步删除后端redis中的购物车商品
+        return IMOOCJSONResult.ok();
+    }
+
 
 }
