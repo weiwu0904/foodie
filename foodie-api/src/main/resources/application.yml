@@ -34,8 +34,15 @@ mapper:
   not-empty: false
   identity: MYSQL
 
+# pagehelper 分页插件配置
+pagehelper:
+  helper-dialect: mysql
+  support-methods-arguments: true
+
 logging:
   file:
     name: /workspace/logs/foodie.log
   level:
     com.weiwu.mapper: debug # mybatis日志打印
+
+

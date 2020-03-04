@@ -4,6 +4,7 @@ import com.weiwu.enums.YesOrNo;
 import com.weiwu.pojo.Carousel;
 import com.weiwu.pojo.Category;
 import com.weiwu.pojo.vo.CategoryVO;
+import com.weiwu.pojo.vo.NewItemsVO;
 import com.weiwu.service.CarouselService;
 import com.weiwu.service.CategoryService;
 import com.weiwu.utils.IMOOCJSONResult;
@@ -11,10 +12,7 @@ import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
@@ -56,6 +54,19 @@ public class IndexController {
             return IMOOCJSONResult.errorMsg("分类不存在");
         }
         List<CategoryVO> list = categoryService.getSubCatList(rootCatId);
+        return IMOOCJSONResult.ok(list);
+    }
+
+    // 根据商品的父级分类获取子分类
+    @GetMapping("/sixNewItems/{rootCatId}")
+    @ApiOperation(value = "查询每个一级分类最新6条商品数据", notes = "查询每个一级分类最新6条商品数据",httpMethod = "GET")
+    public IMOOCJSONResult sixNewItems(@PathVariable Integer rootCatId) {
+
+        if (rootCatId == null) {
+            return IMOOCJSONResult.errorMsg("分类不存在");
+        }
+        // 页面是懒加载，其实这个list每次只有1个元素
+        List<NewItemsVO> list = categoryService.getSixNewItemLazy(rootCatId);
         return IMOOCJSONResult.ok(list);
     }
 }
