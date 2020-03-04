@@ -1,6 +1,5 @@
 package com.weiwu.service.impl;
 
-import com.fasterxml.jackson.databind.util.BeanUtil;
 import com.weiwu.enums.YesOrNo;
 import com.weiwu.mapper.UserAddressMapper;
 import com.weiwu.pojo.UserAddress;
@@ -104,5 +103,14 @@ public class AddressServiceImpl implements AddressService {
         queryAddress.setUserId(userId);
         queryAddress.setIsDefault(YesOrNo.YES.type);
         userAddressMapper.updateByPrimaryKeySelective(queryAddress);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public UserAddress queryUserAddress(String userId, String addressId) {
+        UserAddress queryAddress = new UserAddress();
+        queryAddress.setUserId(userId);
+        queryAddress.setId(addressId);
+        return userAddressMapper.selectOne(queryAddress);
     }
 }

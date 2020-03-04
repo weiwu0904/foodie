@@ -3,6 +3,7 @@ package com.weiwu.service.impl;
 import com.github.pagehelper.PageHelper;
 import com.github.pagehelper.PageInfo;
 import com.weiwu.enums.CommentLevel;
+import com.weiwu.enums.YesOrNo;
 import com.weiwu.mapper.*;
 import com.weiwu.pojo.*;
 import com.weiwu.pojo.vo.CommentLevelCountVO;
@@ -133,6 +134,33 @@ public class ItemServiceImpl implements ItemService {
         return itemsMapperCustom.queryItemsBySpecIds(specIdList);
     }
 
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public ItemsSpec queryItemSpecById(String specId) {
+        return itemsSpecMapper.selectByPrimaryKey(specId);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public String queryItemMainImgById(String itemId) {
+        ItemsImg itemsImg = new ItemsImg();
+        itemsImg.setItemId(itemId);
+        itemsImg.setIsMain(YesOrNo.YES.type);
+        ItemsImg result = itemsImgMapper.selectOne(itemsImg);
+        return result != null ? result.getUrl() : "";
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void decreaseItemSpecStock(String specId, Integer buyCounts) {
+        //1. synchronized 集群环境下不可行
+        //2. 分布式锁可以使用 zookeeper redis
+        //3. 乐观锁
+        int result = itemsMapperCustom.decreaseItemSpecStock(specId, buyCounts);
+        if (result == 0) {
+            throw new RuntimeException("订单创建失败：库存不足");
+        }
+    }
 
     private PagedGridResult setterGridPaged(List<?> list, int page) {
         PageInfo<?> pageInfo = new PageInfo<>(list);
