@@ -7,7 +7,10 @@ import com.weiwu.mapper.*;
 import com.weiwu.pojo.*;
 import com.weiwu.pojo.vo.CommentLevelCountVO;
 import com.weiwu.pojo.vo.ItemCommentVO;
+import com.weiwu.pojo.vo.SearchItemsVO;
+import com.weiwu.pojo.vo.ShopcartVO;
 import com.weiwu.service.ItemService;
+import com.weiwu.utils.DesensitizationUtil;
 import com.weiwu.utils.PagedGridResult;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -15,6 +18,8 @@ import org.springframework.transaction.annotation.Transactional;
 import tk.mybatis.mapper.entity.Example;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -50,7 +55,7 @@ public class ItemServiceImpl implements ItemService {
 
         Example example = new Example(ItemsImg.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("itemId",itemId);
+        criteria.andEqualTo("itemId", itemId);
 
         return itemsImgMapper.selectByExample(example);
     }
@@ -61,7 +66,7 @@ public class ItemServiceImpl implements ItemService {
 
         Example example = new Example(ItemsSpec.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("itemId",itemId);
+        criteria.andEqualTo("itemId", itemId);
 
         return itemsSpecMapper.selectByExample(example);
     }
@@ -71,7 +76,7 @@ public class ItemServiceImpl implements ItemService {
     public ItemsParam queryItemsParam(String itemId) {
         Example example = new Example(ItemsParam.class);
         Example.Criteria criteria = example.createCriteria();
-        criteria.andEqualTo("itemId",itemId);
+        criteria.andEqualTo("itemId", itemId);
         return itemsParamMapper.selectOneByExample(example);
     }
 
@@ -83,22 +88,53 @@ public class ItemServiceImpl implements ItemService {
         Integer normalCounts = getCommentCounts(itemId, CommentLevel.NORMAL.type);
         Integer badCounts = getCommentCounts(itemId, CommentLevel.BAD.type);
         Integer totalCounts = goodCounts + normalCounts + badCounts;
-        return new CommentLevelCountVO(totalCounts,goodCounts,normalCounts,badCounts);
+        return new CommentLevelCountVO(totalCounts, goodCounts, normalCounts, badCounts);
     }
 
 
     @Override
     @Transactional(propagation = Propagation.SUPPORTS)
     public PagedGridResult queryPagedComments(String itemId, Integer level,
-                                                             Integer page, Integer pageSize) {
-        PageHelper.startPage(page,pageSize);
+                                              Integer page, Integer pageSize) {
+        PageHelper.startPage(page, pageSize);
         List<ItemCommentVO> commentVOList = itemsMapperCustom.queryItemComments(itemId, level);
 
-        return setterGridPaged(commentVOList,page);
+        for (ItemCommentVO vo : commentVOList) {
+            String s = DesensitizationUtil.commonDisplay(vo.getNickname());
+            vo.setNickname(s);
+        }
+        return setterGridPaged(commentVOList, page);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public PagedGridResult searchItems(String keywords, String sort, Integer page, Integer pageSize) {
+        PageHelper.startPage(page, pageSize);
+        List<SearchItemsVO> list = itemsMapperCustom.searchItems(keywords, sort);
+
+        return setterGridPaged(list, page);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public PagedGridResult searchItemsByThirdCat(Integer catId, String sort, Integer page, Integer pageSize) {
+        PageHelper.startPage(page, pageSize);
+
+        List<SearchItemsVO> list = itemsMapperCustom.searchItemsByThirdCat(catId, sort);
+
+        return setterGridPaged(list, page);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public List<ShopcartVO> queryItemsBySpecIds(String specIds) {
+        String[] split = specIds.split(",");
+        List<String> specIdList = Arrays.asList(split);
+        return itemsMapperCustom.queryItemsBySpecIds(specIdList);
     }
 
 
-    private PagedGridResult  setterGridPaged(List<?> list, int page) {
+    private PagedGridResult setterGridPaged(List<?> list, int page) {
         PageInfo<?> pageInfo = new PageInfo<>(list);
         PagedGridResult pagedGridResult = new PagedGridResult();
         pagedGridResult.setPage(page);

@@ -20,4 +20,91 @@
           </if>
   </select>
 
+    <select id="searchItems" resultType="com.weiwu.pojo.vo.SearchItemsVO">
+        SELECT
+            i.id AS itemId,
+            i.item_name AS itemName,
+            i.sell_counts AS sellCounts,
+            ii.url AS imgUrl,
+            temp_spec.price AS price
+        FROM
+            items i
+        LEFT JOIN
+            items_img ii ON i.id = ii.item_id
+        LEFT JOIN
+            (SELECT item_id,MIN(price_discount) AS price FROM items_spec GROUP BY item_id) temp_spec
+        ON
+            temp_spec.item_id = i.id
+        WHERE
+            ii.is_main = 1
+        <if test="keywords != null and keywords != ''">
+            AND i.item_name LIKE '%${keywords}%'
+        </if>
+        ORDER BY
+        <choose>
+            <when test='sort=="c"'>
+                i.sell_counts desc
+            </when>
+            <when test='sort=="p"'>
+                temp_spec.price asc
+            </when>
+            <otherwise>
+                i.item_name desc
+            </otherwise>
+        </choose>
+    </select>
+
+
+    <select id="searchItemsByThirdCat" resultType="com.weiwu.pojo.vo.SearchItemsVO">
+        SELECT
+            i.id AS itemId,
+            i.item_name AS itemName,
+            i.sell_counts AS sellCounts,
+            ii.url AS imgUrl,
+            temp_spec.price AS price
+        FROM
+            items i
+        LEFT JOIN
+            items_img ii ON i.id = ii.item_id
+        LEFT JOIN
+            (SELECT item_id,MIN(price_discount) AS price FROM items_spec GROUP BY item_id) temp_spec
+        ON
+            temp_spec.item_id = i.id
+        WHERE
+            ii.is_main = 1 AND i.cat_id = #{catId}
+        ORDER BY
+        <choose>
+            <when test='sort=="c"'>
+                i.sell_counts desc
+            </when>
+            <when test='sort=="p"'>
+                temp_spec.price asc
+            </when>
+            <otherwise>
+                i.item_name desc
+            </otherwise>
+        </choose>
+    </select>
+
+    <select id="queryItemsBySpecIds" parameterType="list" resultType="com.weiwu.pojo.vo.ShopcartVO">
+        SELECT
+            i.id AS itemId,
+            ii.url AS itemImgUrl,
+            i.item_name AS itemName,
+            iSpec.id AS specId,
+            iSpec.`name` AS specName,
+            iSpec.price_discount AS priceDiscount,
+            iSpec.price_normal AS priceNormal
+        FROM
+            items i
+            LEFT JOIN items_spec iSpec ON i.id = iSpec.item_id
+            LEFT JOIN items_img ii ON i.id = ii.item_id
+        WHERE
+            ii.is_main = 1
+            AND iSpec.id IN
+            <foreach collection="specIds" item="specId" open="(" close=")" separator=",">
+                #{specId}
+            </foreach>
+    </select>
+
 </mapper>

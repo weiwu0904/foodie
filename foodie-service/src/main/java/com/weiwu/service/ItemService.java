@@ -6,7 +6,9 @@ import com.weiwu.pojo.ItemsParam;
 import com.weiwu.pojo.ItemsSpec;
 import com.weiwu.pojo.vo.CommentLevelCountVO;
 import com.weiwu.pojo.vo.ItemCommentVO;
+import com.weiwu.pojo.vo.ShopcartVO;
 import com.weiwu.utils.PagedGridResult;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -57,4 +59,31 @@ public interface ItemService {
     PagedGridResult queryPagedComments(String itemId, Integer level,
                                                       Integer page, Integer pageSize);
 
+    /**
+     * 搜索商品列表
+     * @param keywords
+     * @param sort
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    PagedGridResult searchItems(String keywords, String sort,Integer page, Integer pageSize);
+
+    /**
+     * 根据三级分类ID搜索商品
+     * @param catId
+     * @param sort
+     * @param page
+     * @param pageSize
+     * @return
+     */
+    PagedGridResult searchItemsByThirdCat(Integer catId, String sort, Integer page, Integer pageSize);
+
+
+    /**
+     * 根据规则ids 查询购物车中最新 商品信息数据
+     * @param specIds
+     * @return
+     */
+    List<ShopcartVO> queryItemsBySpecIds(String specIds);
 }
