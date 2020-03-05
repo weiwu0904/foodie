@@ -2,6 +2,7 @@ package com.weiwu.controller;
 
 import com.weiwu.enums.OrderStatusEnum;
 import com.weiwu.enums.PayMethod;
+import com.weiwu.pojo.OrderStatus;
 import com.weiwu.pojo.bo.SubmitOrderBO;
 import com.weiwu.pojo.vo.MerchantOrdersVO;
 import com.weiwu.pojo.vo.OrderVO;
@@ -52,6 +53,8 @@ public class OrdersController extends BaseController {
         //3. 向支付中心发送当前订单，用于保存支付中心的订单信息
         MerchantOrdersVO merchantOrdersVO = orderVO.getMerchantOrdersVO();
         merchantOrdersVO.setReturnUrl(payReturnUrl);
+        // 为了方便测试购买，统一改为一分钱
+        merchantOrdersVO.setAmount(1);
 
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
@@ -72,5 +75,12 @@ public class OrdersController extends BaseController {
     public Integer notifyMerchantOrderPaid(String merchantOrderId) {
         ordersService.updateOrderStatus(merchantOrderId, OrderStatusEnum.WAIT_DELIVER.type);
         return HttpStatus.OK.value();
+    }
+
+    // 前端 轮寻查询订单状态
+    @PostMapping("/getPaidOrderInfo")
+    public IMOOCJSONResult getPaidOrderInfo(String orderId) {
+        OrderStatus orderStatus = ordersService.queryOrderStatusInfo(orderId);
+        return IMOOCJSONResult.ok(orderStatus);
     }
 }

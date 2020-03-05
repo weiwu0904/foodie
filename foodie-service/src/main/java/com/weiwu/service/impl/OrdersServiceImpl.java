@@ -12,6 +12,7 @@ import com.weiwu.pojo.vo.OrderVO;
 import com.weiwu.service.AddressService;
 import com.weiwu.service.ItemService;
 import com.weiwu.service.OrdersService;
+import com.weiwu.utils.DateUtil;
 import org.aspectj.weaver.ast.Or;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.Date;
+import java.util.List;
 
 @Service
 public class OrdersServiceImpl implements OrdersService {
@@ -165,5 +167,39 @@ public class OrdersServiceImpl implements OrdersService {
         paidStatus.setPayTime(new Date());
 
         orderStatusMapper.updateByPrimaryKeySelective(paidStatus);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.SUPPORTS)
+    public OrderStatus queryOrderStatusInfo(String orderId) {
+        return orderStatusMapper.selectByPrimaryKey(orderId);
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void closeOrder() {
+        //1. 查询所有未付款订单，判断时间是否超时间, 时间是1天, 超时则关闭交易
+        OrderStatus qeuryStatus = new OrderStatus();
+        qeuryStatus.setOrderStatus(OrderStatusEnum.WAIT_PAY.type);
+        List<OrderStatus> orderStatusList = orderStatusMapper.select(qeuryStatus);
+        for (OrderStatus os: orderStatusList) {
+            //1. 获得订单创建时间
+            Date createTime = os.getCreatedTime();
+            //2. 和当前时间对比
+            int daysBetween = DateUtil.daysBetween(createTime, new Date());
+            if (daysBetween >= 1) {
+                //3. 关闭订单
+                doCloseOrder(os.getOrderId());
+            }
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRED)
+    void doCloseOrder(String orderId) {
+        OrderStatus os = new OrderStatus();
+        os.setOrderId(orderId);
+        os.setOrderStatus(OrderStatusEnum.CLOSE.type);
+        os.setCloseTime(new Date());
+        orderStatusMapper.updateByPrimaryKeySelective(os);
     }
 }

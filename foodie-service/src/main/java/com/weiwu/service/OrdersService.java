@@ -1,5 +1,7 @@
 package com.weiwu.service;
 
+import com.weiwu.enums.OrderStatusEnum;
+import com.weiwu.pojo.OrderStatus;
 import com.weiwu.pojo.bo.SubmitOrderBO;
 import com.weiwu.pojo.vo.OrderVO;
 
@@ -17,5 +19,17 @@ public interface OrdersService {
      * @param orderStatus
      */
     void updateOrderStatus(String orderId, Integer orderStatus);
+
+    /**
+     * 查询订单状态
+     * @param orderId
+     * @return
+     */
+    OrderStatus queryOrderStatusInfo(String orderId);
+
+    /**
+     * 关闭超时未支付订单
+     */
+    void closeOrder();
 
 }
