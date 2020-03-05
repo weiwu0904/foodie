@@ -2,73 +2,45 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
 <mapper namespace="com.weiwu.mapper.OrdersMapperCustom" >
 
-  <resultMap id="myOrdersVO" type="com.weiwu.pojo.vo.MyOrdersVO">
-    <id column="orderId" property="orderId"/>
-    <result column="createdTime" property="createdTime"/>
-    <result column="payMethod" property="payMethod"/>
-    <result column="realPayAmount" property="realPayAmount"/>
-    <result column="postAmount" property="postAmount"/>
-    <result column="orderStatus" property="orderStatus"/>
-    <result column="isComment" property="isComment"/>
+    <resultMap id="myOrdersVO" type="com.weiwu.pojo.vo.MyOrdersVO">
+        <id column="orderId" property="orderId"/>
+        <result column="createdTime" property="createdTime"/>
+        <result column="payMethod" property="payMethod"/>
+        <result column="realPayAmount" property="realPayAmount"/>
+        <result column="postAmount" property="postAmount"/>
+        <result column="orderStatus" property="orderStatus"/>
+        <result column="isComment" property="isComment"/>
 
-    <collection property="subOrderItemList"
-                select="getSubItems"
-                column="orderId"
-                fetchType="eager"
-                ofType="com.weiwu.pojo.vo.MySubOrderItemVO"/>
-  </resultMap>
+        <collection property="subOrderItemList"
+                    select="getSubItems"
+                    column="orderId"
+                    ofType="com.weiwu.pojo.vo.MySubOrderItemVO"/>
+    </resultMap>
 
-  <select id="queryMyOrders" parameterType="map" resultType="com.weiwu.pojo.vo.MyOrdersVO">
-    SELECT
-        od.id AS orderId,
-        od.created_time AS createTime,
-        od.pay_method AS payMethod,
-        od.real_pay_amount AS realPayAmount,
-        od.post_amount AS posAmount,
-        os.order_status AS orderStatus
-    FROM
-        orders od
-        LEFT JOIN order_status os ON od.id = os.order_id
-    WHERE
-        od.is_delete = 0
-    AND
-        od.user_id = #{userId}
-    <if test="orderStatus != null and orderStatus != ''">
-      AND  os.order_status = #{orderStatus}
-    </if>
-    ORDER BY
-        od.updated_time ASC
-  </select>
-
-
-    <select id="queryMyOrdersDoNotUse" parameterType="map" resultType="com.weiwu.pojo.vo.MyOrdersVO">
+    <select id="queryMyOrders" resultMap="myOrdersVO" parameterType="map">
         SELECT
-        od.id AS orderId,
-        od.created_time AS createTime,
-        od.pay_method AS payMethod,
-        od.real_pay_amount AS realPayAmount,
-        od.post_amount AS posAmount,
-        os.order_status AS orderStatus,
-        oi.id AS itemId,
-        oi.item_name AS itemName,
-        oi.item_img AS itemImg,
-        oi.item_spec_id AS itemSpecId,
-        oi.item_spec_name AS itemSpecName,
-        oi.buy_counts AS buyCounts,
-        oi.price AS price
+            od.id as orderId,
+            od.created_time as createdTime,
+            od.pay_method as payMethod,
+            od.real_pay_amount as realPayAmount,
+            od.post_amount as postAmount,
+            os.order_status as orderStatus,
+            od.is_comment as isComment
         FROM
-        orders od
-        LEFT JOIN order_status os ON od.id = os.order_id
-        LEFT JOIN order_items oi ON od.id = oi.order_id
+            orders od
+        LEFT JOIN
+            order_status os
+        on
+            od.id = os.order_id
         WHERE
-        od.is_delete = 0
+            od.user_id = #{userId}
         AND
-        od.user_id = #{userId}
-        <if test="orderStatus != null and orderStatus != ''">
-            AND  os.order_status = #{orderStatus}
+            od.is_delete = 0
+        <if test="orderStatus != null">
+            and os.order_status = #{orderStatus}
         </if>
         ORDER BY
-        od.updated_time ASC
+            od.updated_time ASC
     </select>
 
 
@@ -85,5 +57,6 @@
         order_items oi
       where
         oi.order_id = #{orderId}
+
     </select>
 </mapper>

@@ -50,6 +50,6 @@ logging:
   file:
     name: /workspace/logs/foodie.log
   level:
-    com.weiwu.mapper: debug # mybatis日志打印
+    com.weiwu.mapper: info # mybatis日志打印
 
 

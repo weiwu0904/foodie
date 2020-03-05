@@ -19,6 +19,7 @@ public class CorsConfig {
         // 设置允许访问的URL和端口
         corsConfiguration.addAllowedOrigin("http://localhost:8080");
         corsConfiguration.addAllowedOrigin("http://127.0.0.1:8080");
+        corsConfiguration.addAllowedOrigin("*");
 
         // 设置是否发送cookie信息
         corsConfiguration.setAllowCredentials(true);

@@ -31,5 +31,5 @@ public class BaseController {
     String paymentServerUrl = "http://payment.t.mukewang.com/foodie-payment/payment/createMerchantOrder";
 
     // 微信支付成功  通知 ----> 支付中心  通知 ----->  我们的程序的URL
-    String payReturnUrl = "http://localhost:8088/orders/notifyMerchantOrderPaid";
+    String payReturnUrl = "http://175.24.95.101:8088/orders/notifyMerchantOrderPaid";
 }
