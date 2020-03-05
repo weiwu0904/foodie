@@ -7,9 +7,12 @@ import com.weiwu.mapper.OrderStatusMapper;
 import com.weiwu.mapper.OrdersMapper;
 import com.weiwu.pojo.*;
 import com.weiwu.pojo.bo.SubmitOrderBO;
+import com.weiwu.pojo.vo.MerchantOrdersVO;
+import com.weiwu.pojo.vo.OrderVO;
 import com.weiwu.service.AddressService;
 import com.weiwu.service.ItemService;
 import com.weiwu.service.OrdersService;
+import org.aspectj.weaver.ast.Or;
 import org.n3r.idworker.Sid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -42,7 +45,7 @@ public class OrdersServiceImpl implements OrdersService {
 
     @Override
     @Transactional(propagation = Propagation.REQUIRED)
-    public void createOrder(SubmitOrderBO orderBO) {
+    public OrderVO createOrder(SubmitOrderBO orderBO) {
 
         String userId = orderBO.getUserId();
         String addressId = orderBO.getAddressId();
@@ -135,5 +138,32 @@ public class OrdersServiceImpl implements OrdersService {
         waitPayOrderStatus.setOrderStatus(OrderStatusEnum.WAIT_PAY.type);
         waitPayOrderStatus.setCreatedTime(new Date());
         orderStatusMapper.insert(waitPayOrderStatus);
+
+        //4. 构建商户的订单，传递给支付中心
+        MerchantOrdersVO merchantOrdersVO = new MerchantOrdersVO();
+        merchantOrdersVO.setMerchantOrderId(orderId);
+        merchantOrdersVO.setMerchantUserId(userId);
+        merchantOrdersVO.setAmount(realPayAmoud);
+        merchantOrdersVO.setPayMethod(payMethod + postAmout);
+       // merchantOrdersVO.setReturnUrl();// 在controller里设置
+
+        //5. 构建自定义订单VO
+        OrderVO orderVO = new OrderVO();
+        orderVO.setOrderId(orderId);
+        orderVO.setMerchantOrdersVO(merchantOrdersVO);
+
+        return orderVO;
+    }
+
+    @Override
+    @Transactional(propagation = Propagation.REQUIRED)
+    public void updateOrderStatus(String orderId, Integer orderStatus) {
+
+        OrderStatus paidStatus = new OrderStatus();
+        paidStatus.setOrderId(orderId);
+        paidStatus.setOrderStatus(orderStatus);
+        paidStatus.setPayTime(new Date());
+
+        orderStatusMapper.updateByPrimaryKeySelective(paidStatus);
     }
 }
