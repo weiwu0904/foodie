@@ -4,8 +4,11 @@ server:
 
 spring:
   datasource:
-    data-username: root
-    data-password: 123123123
+    username: root
+    password: 123123123
+  redis:
+    host: 127.0.0.1
+    password: 123456
 
 
 logging:
