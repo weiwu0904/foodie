@@ -7,6 +7,10 @@
 *.log
 target
 /**/target
+<<<<<<< HEAD
+=======
+
+>>>>>>> e3260030c6c93f9cd526b645a8e70f0edc3a633d
 .idea
 # BlueJ files
 *.ctxt
